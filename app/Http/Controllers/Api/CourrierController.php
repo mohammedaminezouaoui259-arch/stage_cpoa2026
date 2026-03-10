@@ -11,28 +11,31 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class CourrierController extends Controller
 {
 
-    // 🔹 يرجع الرقم التالي ديال courrier
-    public function nextNumber()
+    // 🔹 يرجع الرقم التالي حسب السنة
+    public function nextNumber(Request $request)
     {
 
-        $last = Courrier::latest()->first();
+        $annee = $request->annee ?? date('Y');
+
+        $last = Courrier::where('annee', $annee)
+            ->orderBy('numero', 'desc')
+            ->first();
 
         if (!$last) {
 
-            $numero = "2026-001";
+            $numero = "001";
 
         } else {
 
-            $number = intval(substr($last->numero, -3)) + 1;
+            $number = intval($last->numero) + 1;
 
-            $numero = "2026-" . str_pad($number, 3, "0", STR_PAD_LEFT);
+            $numero = str_pad($number, 3, "0", STR_PAD_LEFT);
 
         }
 
         return response()->json([
             'numero' => $numero
         ]);
-
     }
 
 
@@ -42,6 +45,7 @@ class CourrierController extends Controller
 
         $courrier = Courrier::create([
             'numero' => $request->numero,
+            'annee' => $request->annee,
             'type' => $request->type,
             'objet' => $request->objet,
             'description' => $request->description,
@@ -76,10 +80,9 @@ class CourrierController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Courrier ajouté',
+            'message' => 'Courrier ajouté avec succès',
             'courrier' => $courrier
         ]);
-
     }
 
 
@@ -88,15 +91,15 @@ class CourrierController extends Controller
     {
 
         $courriers = Courrier::with('affectations.service')
-            ->latest()
+            ->orderBy('annee', 'desc')
+            ->orderBy('numero', 'desc')
             ->get();
 
         return response()->json($courriers);
-
     }
 
 
-    // 🔹 télécharger formulaire PDF
+    // 🔹 télécharger PDF
     public function downloadPdf($id)
     {
 
@@ -108,7 +111,6 @@ class CourrierController extends Controller
         ]);
 
         return $pdf->download('courrier_' . $courrier->numero . '.pdf');
-
     }
 
 }

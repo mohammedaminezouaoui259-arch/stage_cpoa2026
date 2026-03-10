@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import Select from "react-select"
+import CreatableSelect from "react-select/creatable"
 
 export default function CreateCourrier(){
 
 const [numero,setNumero] = useState("")
+const [annee,setAnnee] = useState(new Date().getFullYear())
 const [objet,setObjet] = useState("")
 const [type,setType] = useState("entrant")
 const [date,setDate] = useState("")
@@ -17,7 +18,7 @@ const [loading,setLoading] = useState(false)
 
 useEffect(()=>{
 
-fetch("/api/courriers/next-number")
+fetch("/api/courriers/next-number?annee="+annee)
 .then(res=>res.json())
 .then(data=>{
 setNumero(data.numero)
@@ -29,7 +30,7 @@ fetch("/api/services")
 setServices(data)
 })
 
-},[])
+},[annee])
 
 const serviceOptions = services.map(s=>({
 value:s.id,
@@ -84,6 +85,7 @@ setLoading(true)
 const formData = new FormData()
 
 formData.append("numero",numero)
+formData.append("annee",annee)
 formData.append("objet",objet)
 formData.append("type",type)
 formData.append("date_courrier",date)
@@ -114,7 +116,7 @@ setFichier(null)
 
 setLoading(false)
 
-fetch("/api/courriers/next-number")
+fetch("/api/courriers/next-number?annee="+annee)
 .then(res=>res.json())
 .then(data=>{
 setNumero(data.numero)
@@ -141,88 +143,143 @@ Ajouter un Courrier
 <form onSubmit={submitForm} className="space-y-4">
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Numero</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Année
+</label>
+
 <input
-type="text"
-value={numero}
-readOnly
-className="w-full border rounded-lg p-2 bg-gray-100"
+type="number"
+value={annee}
+onChange={(e)=>setAnnee(e.target.value)}
+className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Objet *</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Numero
+</label>
+
+<input
+type="text"
+value={numero}
+onChange={(e)=>setNumero(e.target.value)}
+className="w-full border rounded-lg p-2"
+/>
+
+</div>
+
+<div>
+
+<label className="block text-sm font-medium text-gray-600">
+Objet *
+</label>
+
 <input
 type="text"
 value={objet}
 onChange={(e)=>setObjet(e.target.value)}
 className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 <div className="grid grid-cols-2 gap-4">
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Type</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Type
+</label>
+
 <select
 value={type}
 onChange={(e)=>setType(e.target.value)}
 className="w-full border rounded-lg p-2"
 >
+
 <option value="entrant">Entrant</option>
 <option value="sortant">Sortant</option>
+
 </select>
+
 </div>
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Date *</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Date *
+</label>
+
 <input
 type="date"
 value={date}
 onChange={(e)=>setDate(e.target.value)}
 className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 </div>
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Description</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Description
+</label>
+
 <textarea
 value={description}
 onChange={(e)=>setDescription(e.target.value)}
 className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 <div className="grid grid-cols-2 gap-4">
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Expediteur</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Expediteur
+</label>
+
 <input
 type="text"
 value={expediteur}
 onChange={(e)=>setExpediteur(e.target.value)}
 className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Destinataire</label>
+
+<label className="block text-sm font-medium text-gray-600">
+Destinataire
+</label>
+
 <input
 type="text"
 value={destinataire}
 onChange={(e)=>setDestinataire(e.target.value)}
 className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 </div>
 
 <div>
-<label className="block text-sm font-medium text-gray-600">Service *</label>
 
-<Select
+<label className="block text-sm font-medium text-gray-600">
+Service *
+</label>
+
+<CreatableSelect
 options={serviceOptions}
 onChange={handleServiceChange}
 placeholder="Rechercher ou ajouter service..."
@@ -234,15 +291,18 @@ formatCreateLabel={(inputValue)=>`Ajouter "${inputValue}"`}
 </div>
 
 <div>
+
 <label className="block text-sm font-medium text-gray-600">
 Scan Courrier (PDF)
 </label>
+
 <input
 type="file"
 accept="application/pdf"
 onChange={(e)=>setFichier(e.target.files[0])}
 className="w-full border rounded-lg p-2"
 />
+
 </div>
 
 <button
@@ -250,7 +310,9 @@ type="submit"
 disabled={loading}
 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow w-full"
 >
+
 {loading ? "Enregistrement..." : "Enregistrer"}
+
 </button>
 
 </form>
