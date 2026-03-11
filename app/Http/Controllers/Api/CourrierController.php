@@ -11,14 +11,14 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class CourrierController extends Controller
 {
 
-    // 🔹 يرجع الرقم التالي حسب السنة
+    // 🔹 الرقم التالي حسب السنة
     public function nextNumber(Request $request)
     {
 
         $annee = $request->annee ?? date('Y');
 
         $last = Courrier::where('annee', $annee)
-            ->orderBy('numero', 'desc')
+            ->orderByRaw('CAST(numero as UNSIGNED) desc')
             ->first();
 
         if (!$last) {
@@ -43,7 +43,17 @@ class CourrierController extends Controller
     public function store(Request $request)
     {
 
+        $request->validate([
+            'numero' => 'required',
+            'annee' => 'required',
+            'objet' => 'required',
+            'date_courrier' => 'required|date',
+            'service_id' => 'required',
+            'nature_id' => 'required'
+        ]);
+
         $courrier = Courrier::create([
+
             'numero' => $request->numero,
             'annee' => $request->annee,
             'type' => $request->type,
@@ -52,16 +62,21 @@ class CourrierController extends Controller
             'date_courrier' => $request->date_courrier,
             'expediteur' => $request->expediteur,
             'destinataire' => $request->destinataire,
+            'nombre_pieces' => $request->nombre_pieces,
+            'observations' => $request->observations,
+            'nature_id' => $request->nature_id,
             'user_id' => 1,
             'status_id' => 1
+
         ]);
+
 
         // 🔹 upload fichier
         if ($request->hasFile('fichier')) {
 
             $file = $request->file('fichier');
 
-            $folder = 'courriers/' . $courrier->numero;
+            $folder = 'courriers/' . $courrier->annee;
 
             $filename = 'courrier_' . $courrier->numero . '.' . $file->getClientOriginalExtension();
 
@@ -70,47 +85,62 @@ class CourrierController extends Controller
             $courrier->fichier = $path;
 
             $courrier->save();
+
         }
+
 
         // 🔹 affectation service
         Affectation::create([
+
             'courrier_id' => $courrier->id,
             'service_id' => $request->service_id,
             'date_affectation' => now()
+
         ]);
+
 
         return response()->json([
             'message' => 'Courrier ajouté avec succès',
             'courrier' => $courrier
         ]);
+
     }
 
 
-    // 🔹 liste des courriers
+    // 🔹 liste courriers
     public function index()
     {
 
-        $courriers = Courrier::with('affectations.service')
-            ->orderBy('annee', 'desc')
-            ->orderBy('numero', 'desc')
-            ->get();
+        $courriers = Courrier::with([
+            'affectations.service',
+            'nature',
+            'status'
+        ])
+        ->orderBy('annee','desc')
+        ->orderByRaw('CAST(numero as UNSIGNED) desc')
+        ->get();
 
         return response()->json($courriers);
+
     }
 
 
-    // 🔹 télécharger PDF
+    // 🔹 تحميل PDF
     public function downloadPdf($id)
     {
 
-        $courrier = Courrier::with('affectations.service')
-            ->findOrFail($id);
+        $courrier = Courrier::with([
+            'affectations.service',
+            'nature'
+        ])
+        ->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.courrier', [
             'courrier' => $courrier
         ]);
 
         return $pdf->download('courrier_' . $courrier->numero . '.pdf');
+
     }
 
 }

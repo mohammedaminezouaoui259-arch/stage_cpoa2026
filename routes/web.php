@@ -14,6 +14,10 @@ use Inertia\Inertia;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+//depart
+Route::get('/courrier-departs/create', function () {
+    return inertia('CreateCourrierDepart');
+});
 
 
 /*

@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CourrierController;
 use App\Http\Controllers\Api\ServiceController;
-
+use App\Http\Controllers\Api\NatureController;
+use App\Http\Controllers\Api\CourrierDepartController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,3 +33,9 @@ Route::get('/services', [ServiceController::class, 'index']);
 
 // 🔹 ajouter service depuis select
 Route::post('/services', [ServiceController::class, 'store']);
+
+Route::get('/natures', [NatureController::class, 'index']);
+
+Route::get('/courrier-departs/next-number',[CourrierDepartController::class,'nextNumber']);
+Route::post('/courrier-departs',[CourrierDepartController::class,'store']);
+Route::get('/courrier-departs',[CourrierDepartController::class,'index']);

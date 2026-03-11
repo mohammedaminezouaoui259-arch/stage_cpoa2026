@@ -8,67 +8,68 @@ use Illuminate\Database\Eloquent\Model;
 class Courrier extends Model
 {
 
-    use HasFactory;
+use HasFactory;
 
-    protected $fillable = [
+protected $fillable = [
 
-        'numero',
-        'annee',
-        'type',
-        'objet',
-        'description',
-        'date_courrier',
-        'expediteur',
-        'destinataire',
-        'fichier',
-        'status_id',
-        'user_id'
+'numero',
+'annee',
+'type',
+'objet',
+'description',
+'date_courrier',
+'date_arrivee',
+'expediteur',
+'destinataire',
+'nombre_pieces',
+'observations',
+'fichier',
+'nature_id',
+'status_id',
+'user_id'
 
-    ];
-
-
-    // 🔹 Courrier appartient à un utilisateur
-    public function user()
-    {
-
-        return $this->belongsTo(User::class);
-
-    }
+];
 
 
-    // 🔹 Courrier appartient à un status
-    public function status()
-    {
-
-        return $this->belongsTo(Status::class);
-
-    }
+// relation user
+public function user()
+{
+return $this->belongsTo(User::class);
+}
 
 
-    // 🔹 Courrier peut avoir plusieurs affectations
-    public function affectations()
-    {
-
-        return $this->hasMany(Affectation::class);
-
-    }
+// relation status
+public function status()
+{
+return $this->belongsTo(Status::class);
+}
 
 
-    // 🔹 Courrier peut avoir plusieurs traitements
-    public function traitements()
-    {
-
-        return $this->hasMany(Traitement::class);
-
-    }
+// relation nature
+public function nature()
+{
+return $this->belongsTo(Nature::class);
+}
 
 
-    // 🔹 Courrier peut avoir une archive
-    public function archive()
-    {
+// affectations
+public function affectations()
+{
+return $this->hasMany(Affectation::class);
+}
 
-        return $this->hasOne(Archive::class);
 
-    }
+// traitements
+public function traitements()
+{
+return $this->hasMany(Traitement::class);
+}
+
+
+// archive
+public function archive()
+{
+return $this->hasOne(Archive::class);
+}
 
 }
