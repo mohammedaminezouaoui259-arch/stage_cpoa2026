@@ -5,6 +5,7 @@ export default function ListCourrierDeparts() {
   const [courriers, setCourriers] = useState([]);
   const [search, setSearch] = useState("");
   const [annee, setAnnee] = useState("");
+  const [importFile, setImportFile] = useState(null);
 
   useEffect(() => {
     loadCourriers();
@@ -65,6 +66,39 @@ export default function ListCourrierDeparts() {
     window.open(`/api/courrier-departs/generer-pdf/${annee}`, "_blank");
   };
 
+  const handleImport = () => {
+    if (!importFile) {
+      alert("Veuillez sélectionner un fichier");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("fichier", importFile);
+
+    fetch("/api/courrier-departs/import-excel", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => {
+        console.log("Response status:", res.status);
+        return res.json().then(data => ({ status: res.status, data }));
+      })
+      .then(({ status, data }) => {
+        console.log("Response data:", data);
+        if (status === 200 || status === 201) {
+          alert(data.message || "Importation réussie");
+          setImportFile(null);
+          loadCourriers();
+        } else {
+          alert(data.message || "Erreur: " + JSON.stringify(data));
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        alert("Erreur lors de l'importation: " + err.message);
+      });
+  };
+
   const annees = [...new Set(courriers.map((c) => c.annee))];
 
   return (
@@ -111,6 +145,34 @@ export default function ListCourrierDeparts() {
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Générer PDF
+          </button>
+
+          <button
+            onClick={() => window.open("/courrier-departs/export-excel", "_blank")}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Exporter Excel
+          </button>
+
+          <button
+            onClick={() => window.open("/courrier-departs/template-excel", "_blank")}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          >
+            Modèle Excel
+          </button>
+
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={(e) => setImportFile(e.target.files[0])}
+            className="border border-gray-300 rounded-lg p-2"
+          />
+
+          <button
+            onClick={handleImport}
+            className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
+          >
+            Importer
           </button>
         </div>
 

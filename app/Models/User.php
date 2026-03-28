@@ -18,10 +18,14 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    'name',
+    'email',
+    'password',
+    'role',
+    'service',
+    'is_active',
+    'nature_id'
+];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -60,4 +64,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(Traitement::class);
     }
+    public function nature()
+{
+    return $this->belongsTo(\App\Models\Nature::class);
+}
+public function isAdmin()
+{
+    return $this->role === 'admin';
+}
+
+public function isManager()
+{
+    return $this->role === 'manager';
+}
+
+public function isUser()
+{
+    return $this->role === 'user';
+}
 }

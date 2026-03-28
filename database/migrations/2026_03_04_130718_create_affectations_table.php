@@ -14,6 +14,7 @@ return new class extends Migration
     Schema::create('affectations', function (Blueprint $table) {
         $table->id();
         $table->date('date_affectation');
+        $table->text('message');
 
         $table->foreignId('courrier_id')
               ->constrained()
